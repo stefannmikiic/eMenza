@@ -1,0 +1,36 @@
+.nav-bar{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #74222a;
+    color: white;
+}
+.nav-title{
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.nav-user{
+    font-size: 18px;
+    cursor: pointer;
+}
+.nav-bar-desno{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+.profile-icon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+.account-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

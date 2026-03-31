@@ -1,0 +1,97 @@
+.loginform-container {
+    background-color: #253965;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+}
+
+.loginform-container::before {
+    content: "eMEH3A";
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+    letter-spacing: 2px;
+}
+
+.loginform-form {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.loginform-title {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.loginform-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.loginform-field label {
+    font-size: 16px;
+    margin-bottom: 8px;
+    display: flex;
+        align-items: center;
+        gap: 4px;
+}
+
+.loginform-field input {
+    height: 45px;
+    border: none;
+    padding: 0 10px;
+    font-size: 16px;
+    outline: none;
+    background-color: white;
+    color: black;
+}
+
+.login-footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 30px;
+        width: 100%;
+    gap: 10px;
+}
+
+.login-footer-links a, 
+.login-footer-links span {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.loginform-button {
+    background-color: #74222a;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+    border-radius: 2px;
+}
+
+.loginform-button:hover {
+    background-color: #912d32;
+}
+
+.loginform-error {
+    color: #ff8080;
+    font-size: 12px;
+    margin-top: 4px;
+}

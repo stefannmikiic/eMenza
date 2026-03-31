@@ -1,0 +1,99 @@
+.registerform-container {
+    background-color: #253965;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+}
+
+.registerform-container::before {
+    content: "eMEH3A";
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+    letter-spacing: 2px;
+}
+
+.registerform-form {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.registerform-title {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.registerform-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.registerform-field label {
+    font-size: 16px;
+    margin-bottom: 8px;
+    display: flex;
+        align-items: center;
+        gap: 4px;
+}
+
+.registerform-field input {
+    height: 45px;
+    border: none;
+    padding: 0 10px;
+    font-size: 16px;
+    outline: none;
+    border-radius: 2px;
+    background-color: white;
+    color: black;
+}
+
+.register-footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 30px;
+    width: 100%;
+    gap: 10px;
+}
+
+.register-footer-links a, 
+.register-footer-links span {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.registerform-button {
+    background-color: #74222a;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+    border-radius: 2px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.registerform-button:hover {
+    background-color: #912d32;
+}
+
+.registerform-error {
+    color: #ff8080;
+    font-size: 12px;
+    margin-top: 4px;
+}

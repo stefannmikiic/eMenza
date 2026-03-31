@@ -1,0 +1,91 @@
+.renewal-container {
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.renewal-content {
+    padding: 20px;
+    max-width: 450px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.renewal-main-title {
+    color: #253965;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    margin-top: 0;
+}
+
+.renewal-card {
+    background-color: #253965;
+    color: white;
+    padding: 25px;
+    border-radius: 4px;
+    box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.2);
+    margin-bottom: 25px;
+}
+
+.renewal-notice p {
+    line-height: 1.5;
+    font-size: 15px;
+    text-align: left;
+}
+
+.renewal-notice strong {
+    color: white;
+    font-weight: bold;
+}
+
+.renewal-form-title {
+    font-size: 22px;
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+.upload-group {
+    margin-bottom: 25px;
+}
+
+.upload-label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.upload-link {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+}
+
+.paperclip-icon {
+    font-size: 20px;
+    margin-right: 8px;
+    transform: rotate(45deg);
+}
+
+.btn-bordo-renewal {
+    background-color: #74222a;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: block;
+    margin: 30px auto 10px auto;
+    border-radius: 2px;
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
+}
+
+.btn-bordo-renewal:hover {
+    background-color: #912d32;
+}
