@@ -1,57 +1,49 @@
 import bcrypt
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, status
-import pydantic
-from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
-from jose import jwt
-from datetime import datetime, timedelta
+from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from jose import jwt, JWTError
+from datetime import datetime, timedelta
+from sqlalchemy.orm import Session
+from database import SessionLocal, engine, Base
+from database_models import User
+from schemas import RegisterUser, LoginUser
 
 load_dotenv()
 
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
+
 origins = [
     "http://localhost:5173",
-    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5173"
 ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins, 
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-SECRET_KEY = os.getenv("SECRET_KEY", "podrazumevani_tajni_kljuc")
+SECRET_KEY = os.getenv("SECRET_KEY", "moj_podrazumevani_tajni_kljuc")
 ALGORITHM = "HS256"
 
-users_db = []
-
-
-class RegisterUser(BaseModel):
-    email: EmailStr
-    password: str
-    confirmPassword: str
-    stud_kartica: str = pydantic.Field(alias="stud-kartica")
-    class Config:
-        populate_by_name = True
-
-class LoginUser(BaseModel):
-    email: EmailStr
-    password: str
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 def hash_password(password: str):
-    pwd_bytes = password.encode('utf-8')
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(pwd_bytes, salt)
-    return hashed_password.decode('utf-8')
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 def verify_password(plain_password: str, hashed_password: str):
-    password_byte_enc = plain_password.encode('utf-8')
-    hashed_byte_enc = hashed_password.encode('utf-8')
-    return bcrypt.checkpw(password_byte_enc, hashed_byte_enc)
+    return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -60,53 +52,84 @@ def create_access_token(data: dict):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 @app.post("/auth/register")
-async def register(user: RegisterUser):
-    if user.password != user.confirmPassword:
-        raise HTTPException(status_code=400, detail="Lozinke se ne podudaraju")
-    
-    if len(user.password.encode('utf-8')) > 72:
-        raise HTTPException(status_code=400, detail="Lozinka je predugačka")
+def register(user: RegisterUser, db: Session = Depends(get_db)):
 
-    new_user = {
-        "email": user.email,
-        "password": hash_password(user.password),
-        "stud-kartica": user.stud_kartica
-    }
-    users_db.append(new_user)
-    
-    token = create_access_token({"sub": user.email})
+    if user.password != user.confirmPassword:
+        raise HTTPException(400, "Passwords do not match")
+
+    if len(user.password.encode()) > 72:
+        raise HTTPException(400, "Password too long")
+
+    existing_user = db.query(User).filter(User.email == user.email).first()
+    if existing_user:
+        raise HTTPException(400, "User already exists")
+
+    new_user = User(
+        email=user.email,
+        password=hash_password(user.password),
+        stud_kartica=user.stud_kartica
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    token = create_access_token({"sub": new_user.email})
+
     return {
         "user": {
-            "email": user.email, 
-            "stud-kartica": user.stud_kartica
-        }, 
+            "email": new_user.email,
+            "stud-kartica": new_user.stud_kartica
+        },
         "token": token
     }
 
 @app.post("/auth/login")
-async def login(user: LoginUser):
-    found_user = next((u for u in users_db if u["email"] == user.email), None)
-    
-    if not found_user or not verify_password(user.password, found_user["password"]):
+def login(user: LoginUser, db: Session = Depends(get_db)):
+
+    db_user = db.query(User).filter(User.email == user.email).first()
+
+    if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Pogrešan email ili lozinka"
+            detail="Invalid credentials"
         )
-    
-    token = create_access_token({"sub": found_user["email"]})
-    
+
+    token = create_access_token({"sub": db_user.email})
+
     return {
-        "user": {"email": found_user["email"], "stud-kartica": found_user["stud-kartica"]},
+        "user": {
+            "email": db_user.email,
+            "stud-kartica": db_user.stud_kartica
+        },
         "token": token
     }
-@app.get("/auth/me")
-async def get_current_user(token: str):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
-            raise HTTPException(status_code=401, detail="Nevažeći token")
-        return next((u for u in users_db if u["email"] == email), None)
-    except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Nevažeći token")
-    
+
+@app.get("/users")
+def get_all_users(db: Session = Depends(get_db)):
+    return db.query(User).all()
+
+@app.delete("/delete/{id}")
+def delete_user(id: int, db: Session = Depends(get_db)):
+    existing_user = db.query(User).filter(User.id == id).first()
+
+    if not existing_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    db.delete(existing_user)
+    db.commit()
+
+    return {"message": "User deleted successfully"}
+
+@app.put("/update/{id}")
+def update_user(id: int, stud: str, db: Session = Depends(get_db)):
+    existing_user = db.query(User).filter(User.id == id).first()
+
+    if not existing_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    existing_user.stud_kartica = stud
+
+    db.commit()
+
+    return {"message": "User updated"}
