@@ -12,7 +12,7 @@ const NotFound = () => {
         <p className="notfound-subtext">Stranica koju tražite ne postoji.</p>
         
         <button 
-          className="btn-bordo-small" 
+          className="btn-bordo-small-notfound" 
           onClick={() => navigate("/")}
         >
           POVRATAK NA POČETNU

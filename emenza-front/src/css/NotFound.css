@@ -38,7 +38,7 @@
   margin-bottom: 2rem;
 }
 
-.btn-bordo-small {
+.btn-bordo-small-notfound {
   background-color: #74222a;
   color: white;
   border: none;
@@ -50,6 +50,6 @@
   width: 100%;
 }
 
-.btn-bordo-small:hover {
+.btn-bordo-small-notfound:hover {
   background-color: #912d32;
 }
