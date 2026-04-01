@@ -8,6 +8,7 @@ import KupiObroke from './pages/KupiObroke';
 import ProduziKarticu from './pages/ProduziKarticu';
 import MojProfil from './components/MojProfil';
 import ProtectedRoute from './components/ProtectedRoute';
+import NotFound from './pages/NotFound';
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
           <Route path="/kupi-obroke" element={<ProtectedRoute><KupiObroke /></ProtectedRoute>} />
           <Route path="/produzi-karticu" element={<ProtectedRoute><ProduziKarticu /></ProtectedRoute>} />
           <Route path="/profil" element={<ProtectedRoute><MojProfil /></ProtectedRoute>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
 
