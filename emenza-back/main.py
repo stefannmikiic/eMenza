@@ -7,7 +7,7 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine, Base
-from database_models import User
+from database_models import User, Meal
 from schemas import RegisterUser, LoginUser
 
 load_dotenv()
@@ -67,19 +67,29 @@ def register(user: RegisterUser, db: Session = Depends(get_db)):
     new_user = User(
         email=user.email,
         password=hash_password(user.password),
-        stud_kartica=user.stud_kartica
+        stud_kartica=user.stud_kartica,
+        status=user.status
     )
 
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
+    current_month = datetime.utcnow().month
+    new_meals = Meal(
+        user_id=new_user.id,
+        last_reset_month=current_month
+    )
+    db.add(new_meals)
+    db.commit()
+
     token = create_access_token({"sub": new_user.email})
 
     return {
         "user": {
             "email": new_user.email,
-            "stud-kartica": new_user.stud_kartica
+            "stud-kartica": new_user.stud_kartica,
+            "status": new_user.status
         },
         "token": token
     }
@@ -100,7 +110,8 @@ def login(user: LoginUser, db: Session = Depends(get_db)):
     return {
         "user": {
             "email": db_user.email,
-            "stud-kartica": db_user.stud_kartica
+            "stud-kartica": db_user.stud_kartica,
+            "status": db_user.status
         },
         "token": token
     }
@@ -133,3 +144,54 @@ def update_user(id: int, stud: str, db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": "User updated"}
+
+def get_current_user_id(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload.get("sub")
+    except JWTError:
+        raise HTTPException(401, "Invalid token")
+
+@app.get("/meals/my-status")
+def get_meals(token: str, db: Session = Depends(get_db)):
+    email = get_current_user_id(token)
+    db_user = db.query(User).filter(User.email == email).first()
+    
+    if not db_user:
+        raise HTTPException(404, "User not found")
+        
+    current_month = datetime.utcnow().month
+    if db_user.meals.last_reset_month != current_month:
+        db_user.meals.dorucak_preo = 30
+        db_user.meals.rucak_preo = 30
+        db_user.meals.vecera_preo = 30
+        db_user.meals.dorucak_rasp = 0
+        db_user.meals.rucak_rasp = 0
+        db_user.meals.vecera_rasp = 0
+        db_user.meals.last_reset_month = current_month
+        db.commit()
+
+    return db_user.meals
+
+@app.post("/meals/purchase")
+def purchase_meals(token: str, meal_type: str, amount: int, db: Session = Depends(get_db)):
+    email = get_current_user_id(token)
+    db_user = db.query(User).filter(User.email == email).first()
+    
+    meals = db_user.meals
+    
+    if meal_type == "DORUČAK":
+        if amount > meals.dorucak_preo: raise HTTPException(400, "Nema dovoljno")
+        meals.dorucak_rasp += amount
+        meals.dorucak_preo -= amount
+    elif meal_type == "RUČAK":
+        if amount > meals.rucak_preo: raise HTTPException(400, "Nema dovoljno")
+        meals.rucak_rasp += amount
+        meals.rucak_preo -= amount
+    elif meal_type == "VEČERA":
+        if amount > meals.vecera_preo: raise HTTPException(400, "Nema dovoljno")
+        meals.vecera_rasp += amount
+        meals.vecera_preo -= amount
+
+    db.commit()
+    return {"message": "Uspesna kupovina", "new_status": meals}

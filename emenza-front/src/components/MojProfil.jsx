@@ -44,6 +44,10 @@ const MojProfil = () => {
             <label>Broj studentske kartice:</label>
             <p>{userData['stud-kartica']}</p>
           </div>
+          <div className="info-group">
+            <label>Status:</label>
+            <p>{userData['status']}</p>
+          </div>
         </div>
         <button className="logout-button" onClick={handleLogout}>
           Odjavi se

@@ -5,6 +5,7 @@ class RegisterUser(BaseModel):
     password: str
     confirmPassword: str
     stud_kartica: str = Field(alias="stud-kartica")
+    status: str
 
     class Config:
         populate_by_name = True

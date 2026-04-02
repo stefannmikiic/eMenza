@@ -1,38 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../css/Pocetna.css';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 
 const Pocetna = () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    const navigate = useNavigate();
-    const months = ["januar", "februar", "mart", "april", "maj", "jun", "jul", "avgust", "septembar", "oktobar", "novembar", "decembar"];
-    const today = new Date();
-    const currentMonthName = months[today.getMonth()]; 
-    const formattedDate = today.toLocaleDateString('sr-RS');   
-    const cardData = {
-    cardNumber: "05514265",
-    balance: "356.00 RSD",
-    validUntil: formattedDate,
-    month: currentMonthName
-  };
+  const navigate = useNavigate();
+  const [mealStats, setMealStats] = useState(null);
+  const user = JSON.parse(localStorage.getItem('user'));
+  const token = localStorage.getItem('token');
+
+  useEffect(() => {
+    const fetchMeals = async () => {
+      try {
+        const res = await axios.get(`http://localhost:8000/meals/my-status?token=${token}`);
+        setMealStats(res.data);
+      } catch (err) {
+        console.error("Greška pri dohvatanju obroka:", err);
+      }
+    };
+
+    if (token) fetchMeals();
+  }, [token]);
+
+  const months = ["januar", "februar", "mart", "april", "maj", "jun", "jul", "avgust", "septembar", "oktobar", "novembar", "decembar"];
+  const today = new Date();
+  const currentMonthName = months[today.getMonth()];
+  const formattedDate = today.toLocaleDateString('sr-RS');
+
+  if (!mealStats) return <div className="loading">Učitavanje...</div>;
+
   return (
     <div className="dashboard-container">
       <Navbar />
       <div className="info-section">
         <div className="info-group">
           <span className="info-label">Broj kartice</span>
-          <span className="info-value">{user['stud-kartica']}</span>
+          <span className="info-value">{user?.['stud-kartica']}</span>
         </div>
         <div className="info-group">
           <span className="info-label">Stanje novca na kartici</span>
-          <span className="info-value">{cardData.balance}</span>
+          <span className="info-value">356.00 RSD</span>
         </div>
       </div>
 
       <div className="meals-card">
-        <h3 className="meals-title">Obroci za {cardData.month}</h3>
-        
+        <h3 className="meals-title">Obroci za {currentMonthName}</h3>
         <table className="meals-table">
           <thead>
             <tr>
@@ -45,37 +58,34 @@ const Pocetna = () => {
           <tbody>
             <tr>
               <td className="row-label">Raspoloživo obroka</td>
-              <td>0</td>
-              <td>6</td>
-              <td>3</td>
+              <td className={mealStats.dorucak_rasp > 0 ? "has-meals" : ""}>{mealStats.dorucak_rasp}</td>
+              <td className={mealStats.rucak_rasp > 0 ? "has-meals" : ""}>{mealStats.rucak_rasp}</td>
+              <td className={mealStats.vecera_rasp > 0 ? "has-meals" : ""}>{mealStats.vecera_rasp}</td>
             </tr>
             <tr>
               <td className="row-label">Preostalo za kupovinu</td>
-              <td>21</td>
-              <td>21</td>
-              <td>21</td>
+              <td>{mealStats.dorucak_preo}</td>
+              <td>{mealStats.rucak_preo}</td>
+              <td>{mealStats.vecera_preo}</td>
             </tr>
             <tr>
               <td className="row-label">Danas potrošeno</td>
-              <td>0</td>
-              <td>1</td>
-              <td>0</td>
+              <td>0</td><td>0</td><td>0</td>
             </tr>
           </tbody>
         </table>
-
         <div className="meals-actions">
           <button className="btn-bordo" onClick={() => navigate('/uplata-novca')}>Uplati novac</button>
           <button className="btn-bordo" onClick={() => navigate('/kupi-obroke')}>Kupi obroke</button>
         </div>
       </div>
-
+      
       <div className="validity-section">
         <div className="info-group">
           <span className="info-label">Kartica važi do:</span>
-          <span className="info-value">{cardData.validUntil}</span>
+          <span className="info-value">{formattedDate}</span>
         </div>
-        <button className="btn-bordo btn-produce" onClick={() => navigate('/produzi-karticu')}>Produži</button>
+        <button className="btn-bordo btn-produce" onClick={() => {navigate('/produzi-karticu')}}>Produži</button>
       </div>
     </div>
   );

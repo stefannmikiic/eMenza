@@ -9,10 +9,12 @@
 }
 
 .dashboard-container .info-section, .validity-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     width: 100%;
     max-width: 400px;
     margin-bottom: 20px;
-    margin-top: 10px;
+    margin-top: 2rem;
 }
 
 .dashboard-container .info-group {

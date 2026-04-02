@@ -1,6 +1,5 @@
 .registerform-container {
     background-color: #253965;
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -15,6 +14,7 @@
     font-size: 3rem;
     font-weight: bold;
     margin-bottom: 2rem;
+    margin-top: 1rem;
     letter-spacing: 2px;
 }
 

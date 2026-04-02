@@ -9,7 +9,8 @@ const RegisterSchema = Yup.object().shape({
   "stud-kartica": Yup.string().required('Student card number is required'),
   email: Yup.string().email('Email is not valid').required('Email is required'),
   password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
-  confirmPassword: Yup.string().oneOf([Yup.ref('password'), null], 'Passwords must match')
+  confirmPassword: Yup.string().oneOf([Yup.ref('password'), null], 'Passwords must match'),
+  status: Yup.string().required('Status is required')
 });
 
 function Register() {
@@ -20,7 +21,8 @@ function Register() {
     "stud-kartica": '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    status: ''
   };
 
   const handleRegisterSubmit = async (values) => {
@@ -37,8 +39,6 @@ function Register() {
     alert(errorMsg);
   }
 };
-
-
 
   return (
     <div className="registerform-container">
@@ -72,6 +72,20 @@ function Register() {
             <label htmlFor="confirmPassword">Potvrdite lozinku</label>
             <Field id="confirmPassword" name="confirmPassword" type="password" />
             <ErrorMessage name="confirmPassword" component="div" className="registerform-error" />
+          </div>
+          <div className="registerform-field">
+            <label>Choose a status</label>
+            <div className="registerform-radio-group">
+              <label>
+                <Field type="radio" name="status" value="budzet" />
+                Budzet
+              </label>
+              <label>
+                <Field type="radio" name="status" value="samofinansiranje" />
+                Samofinansiranje
+              </label>
+            </div>
+            <ErrorMessage name="status" component="div" className="registerform-error" />
           </div>
 
           <button type="submit" className="registerform-button">Registruj se</button>

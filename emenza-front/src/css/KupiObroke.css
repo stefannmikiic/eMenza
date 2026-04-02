@@ -1,8 +1,8 @@
 .purchase-container {
-    background-color: white;
-    min-height: 100vh;
+    background-color: white;;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
 }
 
 .purchase-content {
@@ -151,4 +151,27 @@
     font-weight: bold;
     cursor: pointer;
     box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
+}
+.disabled-btn {
+    background-color: #e0e0e0 !important;
+    color: #a0a0a0 !important;
+    cursor: not-allowed !important;
+    border: 1px solid #ccc !important;
+}
+
+.budget-notice {
+    background-color: #fff3f3;
+    color: #74222a;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin-top: 10px;
+    border-left: 4px solid #74222a;
+}
+
+.month-title {
+    text-align: center;
+    color: #74222a;
+    text-transform: uppercase;
+    margin-bottom: 15px;
 }
