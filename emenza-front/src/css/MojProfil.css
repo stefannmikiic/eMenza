@@ -14,23 +14,26 @@
 }
 
 .profile-card {
-  background: white;
+  background: #253965;
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   width: 100%;
   max-width: 400px;
   text-align: center;
+  color: white;
+  margin-top: 2rem;
 }
 
 .profile-title {
-  color: #333;
+  color: white;
   margin-bottom: 1.5rem;
 }
 
 .profile-info {
   text-align: left;
   margin: 1.5rem 0;
+
 }
 
 .info-group {
@@ -39,7 +42,7 @@
 
 .info-group label {
   font-weight: bold;
-  color: #666;
+  color: white;
   font-size: 0.9rem;
   display: block;
 }

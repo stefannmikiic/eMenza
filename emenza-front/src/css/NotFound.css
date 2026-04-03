@@ -6,7 +6,7 @@
 }
 
 .notfound-card {
-  background: white;
+  background-color: #253965;
   padding: 3rem;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -21,7 +21,7 @@
 .notfound-title {
   font-size: 5rem;
   margin: 2rem 0;
-  color: #74222a;
+  color: white;
   font-weight: bold;
 }
 
@@ -30,12 +30,13 @@
   letter-spacing: 2px;
   margin-bottom: 1rem;
   margin-top: 2rem;
-  color: #333;
+  color: white;
 }
 
 .notfound-subtext {
-  color: #666;
+  color: white;
   margin-bottom: 2rem;
+  margin-top: 1rem;
 }
 
 .btn-bordo-small-notfound {

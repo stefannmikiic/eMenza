@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/MojProfil.css';
+import Navbar from './Navbar';
 
 const MojProfil = () => {
   const navigate = useNavigate();
@@ -28,9 +29,13 @@ const MojProfil = () => {
   };
 
   return (
+          <>
+          
+          <Navbar />
     <div className="profile-container">
+      
       <div className="back-button-container">
-              <button className="btn-bordo-small" onClick={() => navigate(-1)}>Nazad</button>
+              <button className="btn-bordo-small" onClick={() => navigate('/')}>Nazad</button>
             </div>
       <div className="profile-card">
         <h2 className="profile-title">Moj Profil</h2>
@@ -54,6 +59,7 @@ const MojProfil = () => {
         </button>
       </div>
     </div>
+    </>
   );
 };
 

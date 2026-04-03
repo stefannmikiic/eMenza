@@ -3,6 +3,7 @@ import axios from 'axios';
 import Navbar from '../components/Navbar';
 import '../css/KupiObroke.css';
 import { useNavigate } from 'react-router-dom';
+import { GoAlert } from "react-icons/go";
 
 const KupiObroke = () => {
     const navigate = useNavigate();
@@ -61,11 +62,24 @@ const KupiObroke = () => {
         }
     };
 
+    const handleJelovnik = () => {
+        const pdfUrl = '/elovnik_ispravljen_03178bd13e.pdf'; 
+        window.open(pdfUrl, '_blank', 'noreferrer');
+    }
+
     return (
         <div className="purchase-container">
             <Navbar />
             <div className="back-button">
               <button className="btn-bordo-small" onClick={() => navigate(-1)}>Nazad</button>
+            </div>
+            <div className="cenovnik-jelovnik">
+                <div className="cenovnik">
+                    <button className='btn-bordo-small' onClick={() => {navigate('/cenovnik')}}>Cenovnik</button>
+                </div>
+                <div className="jelovnik">
+                    <button className='btn-bordo-small' onClick={() => {handleJelovnik()}}>Jelovnik</button>
+                </div>
             </div>
             <div className="purchase-content">
                 <div className="balance-header">
@@ -95,7 +109,10 @@ const KupiObroke = () => {
                         <h3>{selectedTab} - {currentMonth}</h3>
                         <p>Preostalo za kupovinu: <strong>{getPreostalo()}</strong></p>
                     </div>
-
+                        {user?.status === 'budzet' && dayOfMonth <= 21 && (
+                        <div className="budget-alert">
+                            <p className="alert-text"><GoAlert /> Zbog budžetskog statusa, možete kupiti obroke samo u koracima od 10 do 21. dana u mesecu.</p>
+                        </div>)}
                     <div className="stepper-container">
                         <button className="step-btn" onClick={() => handleQuantityChange(-10)}>-10</button>
                         <button 

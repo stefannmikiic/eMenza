@@ -9,6 +9,7 @@ import ProduziKarticu from './pages/ProduziKarticu';
 import MojProfil from './components/MojProfil';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotFound from './pages/NotFound';
+import Cenovnik from './pages/Cenovnik';
 
 function App() {
 
@@ -22,6 +23,7 @@ function App() {
           <Route path="/kupi-obroke" element={<ProtectedRoute><KupiObroke /></ProtectedRoute>} />
           <Route path="/produzi-karticu" element={<ProtectedRoute><ProduziKarticu /></ProtectedRoute>} />
           <Route path="/profil" element={<ProtectedRoute><MojProfil /></ProtectedRoute>} />
+          <Route path="/cenovnik" element={<ProtectedRoute><Cenovnik /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

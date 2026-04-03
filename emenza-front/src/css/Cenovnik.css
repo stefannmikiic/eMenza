@@ -1,0 +1,27 @@
+.cenovnik-table {
+    margin: 20px auto;
+    border-collapse: collapse;
+    width: 80%;
+    align-items: center;
+    align-content: center;
+    display: flex;
+    justify-content: center;
+    margin-top: 5rem;
+}
+.cenovnik-table th, .cenovnik-table td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: left;
+    background-color: #253965;
+    color: white;
+}
+
+.cenovnik-title {
+    text-align: center;
+    margin-top: 2rem;
+    color: #253965;
+}
+
+.total-row {
+    font-weight: bold;
+}

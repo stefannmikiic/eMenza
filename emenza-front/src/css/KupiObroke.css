@@ -2,7 +2,7 @@
     background-color: white;;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+
 }
 
 .purchase-content {
@@ -116,7 +116,14 @@
     gap: 10px;
     padding-bottom: 30px;
 }
-
+.loading{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #253965;
+    font-size: 18px;
+    margin-top: 2rem;
+}
 .step-btn {
     background-color: white;
     color: #253965;
@@ -174,4 +181,23 @@
     color: #74222a;
     text-transform: uppercase;
     margin-bottom: 15px;
+}
+.cenovnik-jelovnik {
+    display: flex; 
+    justify-content:space-between;
+    gap: 20px;  
+    margin-bottom: 20px;
+    margin: 0 auto;
+}
+
+.budget-alert {
+    background-color: #fff3f3;
+    color: #74222a;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    border-left: 4px solid #74222a;
+    text-align: center;
+    max-width: 90%;
+    margin: 0 auto 1rem auto;
 }
