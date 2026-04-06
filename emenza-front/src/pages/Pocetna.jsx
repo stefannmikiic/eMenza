@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import '../css/Pocetna.css';
 import Navbar from '../components/Navbar';
@@ -9,6 +9,8 @@ const Pocetna = () => {
   const [mealStats, setMealStats] = useState(null);
   const user = JSON.parse(localStorage.getItem('user'));
   const token = localStorage.getItem('token');
+  const lastSpacePressRef = useRef(0);
+  const isConsumingRef = useRef(false);
 
   useEffect(() => {
     const fetchMeals = async () => {
@@ -21,6 +23,51 @@ const Pocetna = () => {
     };
 
     if (token) fetchMeals();
+  }, [token]);
+
+  useEffect(() => {
+    const handleKeyDown = async (e) => {
+      if (e.code !== 'Space') return;
+
+      const target = e.target;
+      const tagName = target?.tagName?.toLowerCase();
+
+      if (
+        tagName === 'input' ||
+        tagName === 'textarea' ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+
+      const now = Date.now();
+
+      if (now - lastSpacePressRef.current <= 400) {
+        lastSpacePressRef.current = 0;
+
+        if (!token || isConsumingRef.current) return;
+
+        try {
+          isConsumingRef.current = true;
+          const res = await axios.post(`http://localhost:8000/meals/consume?token=${token}`);
+          setMealStats(res.data.new_data);
+        } catch (err) {
+          alert(err?.response?.data?.detail || 'Došlo je do greške');
+        } finally {
+          isConsumingRef.current = false;
+        }
+
+        return;
+      }
+
+      lastSpacePressRef.current = now;
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [token]);
 
   const months = ["januar", "februar", "mart", "april", "maj", "jun", "jul", "avgust", "septembar", "oktobar", "novembar", "decembar"];
@@ -40,7 +87,7 @@ const Pocetna = () => {
         </div>
         <div className="info-group">
           <span className="info-label">Stanje novca na kartici</span>
-          <span className="info-value">356.00 RSD</span>
+          <span className="info-value">{mealStats.user_balance ? `${mealStats.user_balance.toFixed(2)} RSD` : "0.00 RSD"}</span>
         </div>
       </div>
 
@@ -70,7 +117,9 @@ const Pocetna = () => {
             </tr>
             <tr>
               <td className="row-label">Danas potrošeno</td>
-              <td>0</td><td>0</td><td>0</td>
+              <td>{mealStats.dorucak_danas}</td>
+              <td>{mealStats.rucak_danas}</td>
+              <td>{mealStats.vecera_danas}</td>
             </tr>
           </tbody>
         </table>

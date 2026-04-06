@@ -13,6 +13,10 @@ const KupiObroke = () => {
     
     const user = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem('token');
+    const dayOfMonth = new Date().getDate();
+    const isBudget = user?.status === 'budzet';
+    const canUseSingleStep = !isBudget || dayOfMonth > 21;
+    const isInvalidBudgetAmount = isBudget && dayOfMonth <= 21 && quantity % 10 !== 0;
 
     const months = ["Januar", "Februar", "Mart", "April", "Maj", "Jun", "Jul", "Avgust", "Septembar", "Oktobar", "Novembar", "Decembar"];
     const currentMonth = months[new Date().getMonth()];
@@ -30,10 +34,6 @@ const KupiObroke = () => {
     }, [token]);
 
     if (!stats) return <div className="loading">Učitavanje podataka...</div>;
-
-    const dayOfMonth = new Date().getDate();
-    const isBudget = user?.status === 'budzet';
-    const canUseSingleStep = !isBudget || dayOfMonth > 21;
 
     const getPreostalo = () => {
         if (selectedTab === 'DORUČAK') return stats.dorucak_preo;
@@ -53,10 +53,34 @@ const KupiObroke = () => {
     };
 
     const handlePurchase = async () => {
+        if (quantity <= 0) {
+            alert("Izaberite količinu obroka za kupovinu.");
+            return;
+        }
+
+        if (isInvalidBudgetAmount) {
+            alert("Budžetski korisnici do 21. u mesecu mogu kupovati samo u koracima od 10.");
+            return;
+        }
+
         try {
-            await axios.post(`http://localhost:8000/meals/purchase?token=${token}&meal_type=${selectedTab}&amount=${quantity}`);
+            const res = await axios.post(`http://localhost:8000/meals/purchase?token=${token}&meal_type=${selectedTab}&amount=${quantity}`);
+            const newData = res.data?.new_data;
+
+            if (newData) {
+                setStats(newData);
+                setQuantity(0);
+
+                if (user) {
+                    localStorage.setItem('user', JSON.stringify({
+                        ...user,
+                        balance: newData.user_balance,
+                        status: newData.status
+                    }));
+                }
+            }
+
             alert("Uspešno ste kupili obroke!");
-            navigate('/');
         } catch (err) {
             alert(err.response?.data?.detail || "Greška pri kupovini");
         }
@@ -85,7 +109,7 @@ const KupiObroke = () => {
                 <div className="balance-header">
                     <div className="balance-info">
                         <span className="balance-label">Stanje novca na kartici:</span>
-                        <span className="balance-amount">356.00 RSD</span>
+                        <span className="balance-amount">{stats.user_balance ? `${stats.user_balance.toFixed(2)} RSD` : "Učitavanje..."}</span>
                     </div>
                     <button className="btn-bordo-small" onClick={() => {navigate('/uplata-novca')}}>Uplati novac</button>
                 </div>
@@ -139,7 +163,7 @@ const KupiObroke = () => {
                 <button 
                     className="btn-bordo-large" 
                     onClick={handlePurchase} 
-                    disabled={quantity === 0}
+                    disabled={quantity === 0 || isInvalidBudgetAmount}
                 >
                     Kupi
                 </button>

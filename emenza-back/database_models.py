@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Float, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -9,7 +9,7 @@ class User(Base):
     password = Column(String, nullable=False)
     stud_kartica = Column(String, nullable=False)
     status = Column(String, nullable=False)
-    
+    balance = Column(Float, default=100000.00)
     meals = relationship("Meal", back_populates="owner", uselist=False)
 
 class Meal(Base):
@@ -18,10 +18,14 @@ class Meal(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     dorucak_rasp = Column(Integer, default=0)
     dorucak_preo = Column(Integer, default=30)
+    dorucak_danas = Column(Integer, default=0)
     rucak_rasp = Column(Integer, default=0)
     rucak_preo = Column(Integer, default=30)
+    rucak_danas = Column(Integer, default=0)
     vecera_rasp = Column(Integer, default=0)
     vecera_preo = Column(Integer, default=30)
+    vecera_danas = Column(Integer, default=0)
     last_reset_month = Column(Integer, default=0)
+    last_daily_reset_day = Column(String, default="")
 
     owner = relationship("User", back_populates="meals")

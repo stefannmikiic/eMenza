@@ -6,6 +6,7 @@ class RegisterUser(BaseModel):
     confirmPassword: str
     stud_kartica: str = Field(alias="stud-kartica")
     status: str
+    balance: float = 100000.00
 
     class Config:
         populate_by_name = True

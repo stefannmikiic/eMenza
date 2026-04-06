@@ -1,16 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react'; // Dodati importi
+import axios from 'axios'; // Dodat import
 import Navbar from '../components/Navbar';
 import '../css/UplataNovca.css';
 import { useNavigate } from 'react-router-dom';
 
 const UplataNovca = () => {
-    const user = JSON.parse(localStorage.getItem('user'));
     const navigate = useNavigate();
-    const paymentData = {
-        balance: "356.00 RSD",
+    const [mealStats, setMealStats] = useState(null);
+    
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
+
+    useEffect(() => {
+        const fetchMeals = async () => {
+            try {
+                const res = await axios.get(`http://localhost:8000/meals/my-status?token=${token}`);
+                setMealStats(res.data);
+            } catch (err) {
+                console.error("Greška pri dohvatanju obroka:", err);
+            }
+        };
+
+        if (token) fetchMeals();
+    }, [token]);
+
+    // Pomoćna funkcija za formatiranje stanja
+    const formatBalance = () => {
+        if (!mealStats) return "Učitavanje...";
+        return `${mealStats.user_balance.toFixed(2)} RSD`;
+    };
+
+    // Fiksne informacije o uplati
+    const paymentInfo = {
         recipientAccount: "150-3000005426-15",
         model: "54",
-        referenceNumber: "05514265"
+        referenceNumber: user?.['stud-kartica'] || "Nema podataka"
     };
 
     return (
@@ -36,22 +60,22 @@ const UplataNovca = () => {
 
                     <div className="payment-info-group">
                         <span className="info-label">Stanje novca na kartici:</span>
-                        <span className="info-value">{paymentData.balance}</span>
+                        <span className="info-value">{formatBalance()}</span>
                     </div>
 
                     <div className="payment-info-group">
                         <span className="info-label">Račun primaoca:</span>
-                        <span className="info-value">{paymentData.recipientAccount}</span>
+                        <span className="info-value">{paymentInfo.recipientAccount}</span>
                     </div>
 
                     <div className="payment-info-group">
                         <span className="info-label">Model:</span>
-                        <span className="info-value">{paymentData.model}</span>
+                        <span className="info-value">{paymentInfo.model}</span>
                     </div>
 
                     <div className="payment-info-group">
-                        <span className="info-label">Poziv na broj:</span>
-                        <span className="info-value">{user['stud-kartica']}</span>
+                        <span className="info-label">Poziv na broj (Vaša kartica):</span>
+                        <span className="info-value">{paymentInfo.referenceNumber}</span>
                     </div>
                 </div>
             </div>
