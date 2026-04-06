@@ -11,6 +11,7 @@ class User(Base):
     status = Column(String, nullable=False)
     balance = Column(Float, default=100000.00)
     meals = relationship("Meal", back_populates="owner", uselist=False)
+    renewal_request = relationship("CardRenewalRequest", back_populates="owner", uselist=False)
 
 class Meal(Base):
     __tablename__ = "meals"
@@ -29,3 +30,12 @@ class Meal(Base):
     last_daily_reset_day = Column(String, default="")
 
     owner = relationship("User", back_populates="meals")
+
+class CardRenewalRequest(Base):
+    __tablename__ = "card_renewal_requests"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    potvrda_o_studiranju_path = Column(String, nullable=False)
+    skenirani_indeks_path = Column(String, nullable=False)
+
+    owner = relationship("User", back_populates="renewal_request")

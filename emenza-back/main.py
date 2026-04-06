@@ -1,14 +1,17 @@
 import bcrypt
 import os
+import shutil
+import uuid
+from pathlib import Path
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, status, Depends
+from fastapi import FastAPI, HTTPException, status, Depends, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, time
 import calendar
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine, Base
-from database_models import User, Meal
+from database_models import User, Meal, CardRenewalRequest
 from schemas import RegisterUser, LoginUser
 
 load_dotenv()
@@ -214,6 +217,63 @@ def get_current_user_id(token: str):
         return payload.get("sub")
     except JWTError:
         raise HTTPException(401, "Invalid token")
+
+def save_uploaded_file(file: UploadFile, upload_dir: Path):
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    original_name = Path(file.filename or "file").name
+    extension = Path(original_name).suffix
+    unique_filename = f"{uuid.uuid4().hex}{extension}"
+    file_path = upload_dir / unique_filename
+
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    return file_path
+
+@app.post("/card-renewal/upload")
+def upload_card_renewal_documents(
+    token: str = Form(...),
+    potvrda: UploadFile = File(...),
+    indeks: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    email = get_current_user_id(token)
+    db_user = db.query(User).filter(User.email == email).first()
+
+    if not db_user:
+        raise HTTPException(404, "User not found")
+
+    project_root = Path(__file__).resolve().parent.parent
+    upload_dir = project_root / "emenza-front" / "public" / "uploads" / "renewals"
+
+    potvrda_file_path = save_uploaded_file(potvrda, upload_dir)
+    indeks_file_path = save_uploaded_file(indeks, upload_dir)
+
+    potvrda_public_path = f"/uploads/renewals/{potvrda_file_path.name}"
+    indeks_public_path = f"/uploads/renewals/{indeks_file_path.name}"
+
+    existing_request = db.query(CardRenewalRequest).filter(CardRenewalRequest.user_id == db_user.id).first()
+
+    if existing_request:
+        existing_request.potvrda_o_studiranju_path = potvrda_public_path
+        existing_request.skenirani_indeks_path = indeks_public_path
+        renewal_request = existing_request
+    else:
+        renewal_request = CardRenewalRequest(
+            user_id=db_user.id,
+            potvrda_o_studiranju_path=potvrda_public_path,
+            skenirani_indeks_path=indeks_public_path
+        )
+        db.add(renewal_request)
+
+    db.commit()
+    db.refresh(renewal_request)
+
+    return {
+        "message": "Zahtev za produženje kartice je uspešno poslat",
+        "potvrda_o_studiranju_path": renewal_request.potvrda_o_studiranju_path,
+        "skenirani_indeks_path": renewal_request.skenirani_indeks_path
+    }
 
 @app.get("/meals/my-status")
 def get_meals(token: str, db: Session = Depends(get_db)):
