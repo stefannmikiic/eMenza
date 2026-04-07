@@ -11,9 +11,24 @@ const Pocetna = () => {
   const token = localStorage.getItem('token');
   const lastSpacePressRef = useRef(0);
   const isConsumingRef = useRef(false);
+  const [mealHistory, setMealHistory] = useState([]);
+  const [qrNonce, setQrNonce] = useState(Date.now());
 
   useEffect(() => {
-    const fetchMeals = async () => {
+  const interval = setInterval(() => {
+    setQrNonce(Date.now());
+  }, 30000);
+
+  return () => clearInterval(interval);
+}, []);
+
+  useEffect(() => {
+    if (token){ 
+      fetchMeals();
+      fetchHistory();
+    }
+  }, [token]);
+  const fetchMeals = async () => {
       try {
         const res = await axios.get(`http://localhost:8000/meals/my-status?token=${token}`);
         setMealStats(res.data);
@@ -21,9 +36,14 @@ const Pocetna = () => {
         console.error("Greška pri dohvatanju obroka:", err);
       }
     };
-
-    if (token) fetchMeals();
-  }, [token]);
+  const fetchHistory = async () => {
+  try {
+    const res = await axios.get(`http://localhost:8000/meals/history?token=${token}`);
+    setMealHistory(res.data);
+  } catch (err) {
+    console.error("Greška pri dohvatanju istorije:", err);
+  }
+};
 
   useEffect(() => {
     const handleKeyDown = async (e) => {
@@ -128,7 +148,18 @@ const Pocetna = () => {
           <button className="btn-bordo" onClick={() => navigate('/kupi-obroke')}>Kupi obroke</button>
         </div>
       </div>
-      
+     <div className="qr">
+  <h3 className="qr-title">QR kod za konzumaciju obroka</h3>
+  <img 
+      src={`http://localhost:8000/meals/qr-code?token=${token}&v=${qrNonce}`}
+      alt="QR kod" 
+      className="qr-image" 
+      style={{ width: '200px', height: '200px', border: '5px solid white', borderRadius: '10px' }}
+  />
+  <p style={{ fontSize: '15px', color: 'black', marginTop: '10px' }}>
+    Pokažite ovaj kod na kasi u menzi
+  </p>
+</div>
       <div className="validity-section">
         <div className="info-group">
           <span className="info-label">Kartica važi do:</span>
@@ -136,6 +167,33 @@ const Pocetna = () => {
         </div>
         <button className="btn-bordo btn-produce" onClick={() => {navigate('/produzi-karticu')}}>Produži</button>
       </div>
+      <div className="history-section">
+  <h3 className="history-title">Poslednje aktivnosti</h3>
+  <div className="history-list">
+    {mealHistory.length > 0 ? (
+      mealHistory.map((log) => (
+        <div key={log.id} className="history-item">
+          <div className="history-details">
+            <span className="history-type">
+              {log.meal_type.charAt(0).toUpperCase() + log.meal_type.slice(1)}
+            </span>
+            <span className="history-time">
+              {new Date(log.datetimestamp).toLocaleString('sr-RS', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </span>
+          </div>
+          <div className="history-status">-1</div>
+        </div>
+      ))
+    ) : (
+      <p className="no-history">Još uvek nema zabeleženih obroka.</p>
+    )}
+  </div>
+</div>
     </div>
   );
 };

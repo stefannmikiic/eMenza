@@ -10,6 +10,7 @@ import MojProfil from './components/MojProfil';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotFound from './pages/NotFound';
 import Cenovnik from './pages/Cenovnik';
+import AdminScanner from './components/AdminScanner';
 
 function App() {
 
@@ -24,6 +25,7 @@ function App() {
           <Route path="/produzi-karticu" element={<ProtectedRoute><ProduziKarticu /></ProtectedRoute>} />
           <Route path="/profil" element={<ProtectedRoute><MojProfil /></ProtectedRoute>} />
           <Route path="/cenovnik" element={<ProtectedRoute><Cenovnik /></ProtectedRoute>} />
+          <Route path="/admin-scanner" element={<ProtectedRoute><AdminScanner /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -11,8 +11,15 @@ from datetime import datetime, timedelta, time
 import calendar
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine, Base
-from database_models import User, Meal, CardRenewalRequest
-from schemas import RegisterUser, LoginUser
+from database_models import User, Meal, CardRenewalRequest, MealLog
+from schemas import RegisterUser, LoginUser, QRScanRequest
+import qrcode
+from fastapi.responses import StreamingResponse
+import io
+import qrcode
+from itsdangerous import URLSafeTimedSerializer
+
+
 
 load_dotenv()
 
@@ -35,7 +42,7 @@ app.add_middleware(
 
 SECRET_KEY = os.getenv("SECRET_KEY", "moj_podrazumevani_tajni_kljuc")
 ALGORITHM = "HS256"
-
+serializer = URLSafeTimedSerializer(SECRET_KEY)
 def get_db():
     db = SessionLocal()
     try:
@@ -95,7 +102,7 @@ def get_current_meal_type():
 
     if time(7, 0) <= current_time <= time(10, 0):
         return "dorucak"
-    if time(11, 30) <= current_time <= time(16, 0):
+    if time(11, 25) <= current_time <= time(16, 0):
         return "rucak"
     if time(17, 0) <= current_time <= time(20, 30):
         return "vecera"
@@ -376,8 +383,14 @@ def consume_meal(token: str, db: Session = Depends(get_db)):
 
     setattr(meals, rasp_attr, getattr(meals, rasp_attr) - 1)
     setattr(meals, danas_attr, getattr(meals, danas_attr) + 1)
-
+    new_log = MealLog(
+    user_id=db_user.id,
+    meal_type=current_meal_type,
+    datetimestamp=datetime.now(),
+    card_number=db_user.stud_kartica
+)
     db.add(meals)
+    db.add(new_log) 
     db.commit()
     db.refresh(db_user)
     db.refresh(meals)
@@ -386,3 +399,84 @@ def consume_meal(token: str, db: Session = Depends(get_db)):
         "message": "Obrok uspešno potrošen",
         "new_data": get_user_status_data(db_user)
     }
+
+@app.get("/meals/qr-code")
+def generate_qr_code_for_meals(token: str, db: Session = Depends(get_db)):
+    email = get_current_user_id(token)
+    db_user = db.query(User).filter(User.email == email).first()
+
+    if not db_user:
+        raise HTTPException(404, "Korisnik nije pronađen")
+    secure_qr_token = serializer.dumps(db_user.stud_kartica)
+    
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(secure_qr_token)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    
+    return StreamingResponse(buf, media_type="image/png")
+
+@app.post("/meals/scan-consume")
+def scan_consume_meal(request: QRScanRequest, db: Session = Depends(get_db)):
+    try:
+        card_number = serializer.loads(request.qr_token, max_age=60)
+    except Exception:
+        raise HTTPException(400, "QR kod je istekao ili je nevažeći. Osvežite stranicu.")
+    
+    
+    db_user = db.query(User).filter(User.stud_kartica == card_number).first()
+    
+    if not db_user:
+        raise HTTPException(404, "Korisnik nije pronađen u sistemu.")
+
+    reset_meals_if_new_month(db_user, db)
+    reset_daily_meals_if_new_day(db_user, db)
+
+    current_meal_type = get_current_meal_type()
+    if not current_meal_type:
+        raise HTTPException(400, "Trenutno nije vreme nijednog obroka.")
+
+    meals = db_user.meals
+    rasp_attr = f"{current_meal_type}_rasp"
+    danas_attr = f"{current_meal_type}_danas"
+
+    if getattr(meals, rasp_attr) <= 0:
+        raise HTTPException(400, f"Korisnik nema preostalih {current_meal_type} obroka.")
+
+    if getattr(meals, danas_attr) >= 2:
+        raise HTTPException(400, f"Korisnik je već iskoristio limit za {current_meal_type} danas.")
+
+    setattr(meals, rasp_attr, getattr(meals, rasp_attr) - 1)
+    setattr(meals, danas_attr, getattr(meals, danas_attr) + 1)
+    new_log = MealLog(
+    user_id=db_user.id,
+    meal_type=current_meal_type,
+    datetimestamp=datetime.now(),
+    card_number=db_user.stud_kartica
+    )
+
+    db.add(meals)
+    db.add(new_log)
+    db.commit()
+    db.refresh(db_user)
+
+    return {
+        "message": f"Uspešno skenirano! Prijatan {current_meal_type}.",
+        "new_data": get_user_status_data(db_user)
+    }
+@app.get("/meals/history")
+def get_meal_history(token: str, db: Session = Depends(get_db)):
+    email = get_current_user_id(token)
+    db_user = db.query(User).filter(User.email == email).first()
+
+    if not db_user:
+        raise HTTPException(404, "User not found")
+
+    logs = db.query(MealLog).filter(MealLog.user_id == db_user.id)\
+             .order_by(MealLog.datetimestamp.desc()).limit(10).all()
+
+    return logs

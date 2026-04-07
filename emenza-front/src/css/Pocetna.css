@@ -5,7 +5,6 @@
     flex-direction: column;
     align-items: center;
     background-color: white;
-    min-height: 100vh;
 }
 
 .dashboard-container .info-section, .validity-section {
@@ -110,4 +109,58 @@
 }
 .btn-bordo:hover{
     background-color: #912d32;
+}
+.history-section {
+  margin-top: 30px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 20px;
+  width: 100%;
+}
+
+.history-title {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
+}
+
+.history-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.history-icon {
+  font-size: 1.5rem;
+  margin-right: 15px;
+}
+
+.history-details {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.history-type {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.history-time {
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.history-status {
+  color: #ff4d4d;
+  font-weight: bold;
+  font-size: 1.1rem;
+  
+}
+.history-list{
+
 }

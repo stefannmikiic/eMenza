@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Float, Integer, String, ForeignKey
+import datetime
+from sqlalchemy import Column, Float, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -39,3 +40,13 @@ class CardRenewalRequest(Base):
     skenirani_indeks_path = Column(String, nullable=False)
 
     owner = relationship("User", back_populates="renewal_request")
+
+class MealLog(Base):
+    __tablename__ = "meal_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    meal_type = Column(String, nullable=False)
+    datetimestamp = Column(DateTime, default=datetime.datetime.now)
+    card_number = Column(String, nullable=False)
+
+    owner = relationship("User")

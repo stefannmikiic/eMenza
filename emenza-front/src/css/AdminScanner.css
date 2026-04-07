@@ -1,0 +1,78 @@
+.admin-scanner-container {
+    max-width: 600px;
+    margin: 50px auto;
+    text-align: center;
+    color: white;
+}
+
+#reader {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid #000;
+}
+
+.result-success {
+    background: #2ecc71;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    font-size: 1.2rem;
+}
+
+.result-error {
+    background: #e74c3c;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.reset-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.admin-scanner-title h1{
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #000;
+}
+#reader__dashboard_section_csr button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+}
+.scanner-controls {
+    margin: 20px 0;
+}
+
+.start-btn {
+    background-color: #2ecc71;
+    color: white;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    border: none;
+}
+
+.stop-btn {
+    background-color: #e74c3c;
+    color: white;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    border: none;
+}
+
+.reset-btn {
+    background-color: #3498db;
+    color: white;
+    padding: 10px 20px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+}

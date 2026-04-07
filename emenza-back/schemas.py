@@ -14,3 +14,6 @@ class RegisterUser(BaseModel):
 class LoginUser(BaseModel):
     email: EmailStr
     password: str
+
+class QRScanRequest(BaseModel):
+    qr_token: str
