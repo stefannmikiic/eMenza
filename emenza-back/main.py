@@ -19,8 +19,6 @@ import io
 import qrcode
 from itsdangerous import URLSafeTimedSerializer
 
-
-
 load_dotenv()
 
 Base.metadata.create_all(bind=engine)
@@ -100,9 +98,9 @@ def reset_daily_meals_if_new_day(db_user, db: Session):
 def get_current_meal_type():
     current_time = datetime.now().time()
 
-    if time(7, 0) <= current_time <= time(10, 0):
+    if time(7, 0) <= current_time <= time(9, 30):
         return "dorucak"
-    if time(11, 25) <= current_time <= time(16, 0):
+    if time(11, 30) <= current_time <= time(14, 30):
         return "rucak"
     if time(17, 0) <= current_time <= time(20, 30):
         return "vecera"
@@ -121,6 +119,7 @@ def get_user_status_data(db_user):
         "rucak_danas": db_user.meals.rucak_danas,
         "vecera_danas": db_user.meals.vecera_danas,
         "user_balance": db_user.balance,
+        "zeton_balance": db_user.zeton_balance,
         "status": db_user.status
     }
 
@@ -128,21 +127,22 @@ def get_user_status_data(db_user):
 def register(user: RegisterUser, db: Session = Depends(get_db)):
 
     if user.password != user.confirmPassword:
-        raise HTTPException(400, "Passwords do not match")
+        raise HTTPException(400, "Lozinke se ne poklapaju")
 
     if len(user.password.encode()) > 72:
-        raise HTTPException(400, "Password too long")
+        raise HTTPException(400, "Lozinka je predugačka")
 
     existing_user = db.query(User).filter(User.email == user.email).first()
     if existing_user:
-        raise HTTPException(400, "User already exists")
+        raise HTTPException(400, "Korisnik već postoji")
 
     new_user = User(
         email=user.email,
         password=hash_password(user.password),
         stud_kartica=user.stud_kartica,
         status=user.status,
-        balance=100000.00
+        balance=100000.00,
+        zeton_balance=0
     )
     current_month = datetime.utcnow().month
     initial_meals = Meal()
@@ -174,7 +174,7 @@ def login(user: LoginUser, db: Session = Depends(get_db)):
     if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
+            detail="Neispravna email adresa ili lozinka"
         )
 
     token = create_access_token({"sub": db_user.email})
@@ -248,7 +248,7 @@ def upload_card_renewal_documents(
     db_user = db.query(User).filter(User.email == email).first()
 
     if not db_user:
-        raise HTTPException(404, "User not found")
+        raise HTTPException(404, "Korisnik nije pronađen")
 
     project_root = Path(__file__).resolve().parent.parent
     upload_dir = project_root / "emenza-front" / "public" / "uploads" / "renewals"
@@ -288,12 +288,39 @@ def get_meals(token: str, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == email).first()
 
     if not db_user:
-        raise HTTPException(404, "User not found")
+        raise HTTPException(404, "Korisnik nije pronađen")
 
     reset_meals_if_new_month(db_user, db)
     reset_daily_meals_if_new_day(db_user, db)
 
     return get_user_status_data(db_user)
+
+@app.post("/meals/kupi-zetone")
+def buy_zeton(token: str, db: Session = Depends(get_db)):
+    email = get_current_user_id(token)
+    db_user = db.query(User).filter(User.email == email).first()
+    
+    if not db_user:
+        raise HTTPException(404, "Korisnik nije pronađen")
+
+    CENA_ZETONA = 1000.00 
+    
+    if db_user.balance < CENA_ZETONA:
+        raise HTTPException(400, f"Nemate dovoljno novca. Cena žetona je {CENA_ZETONA} RSD")
+
+    db_user.balance -= CENA_ZETONA
+    db_user.zeton_balance += 1
+
+    if db_user.zeton_balance > 1:
+        raise HTTPException(400, "Već imate žeton. Maksimalno je 1 žeton po korisniku.")
+    
+    db.commit()
+    db.refresh(db_user)
+    
+    return {
+        "message": "Uspešno kupljen žeton",
+        "new_data": get_user_status_data(db_user)
+    }
 
 @app.post("/meals/purchase")
 def purchase_meals(token: str, meal_type: str, amount: int, db: Session = Depends(get_db)):
@@ -362,7 +389,7 @@ def consume_meal(token: str, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == email).first()
 
     if not db_user:
-        raise HTTPException(404, "User not found")
+        raise HTTPException(404, "Korisnik nije pronađen")
 
     reset_meals_if_new_month(db_user, db)
     reset_daily_meals_if_new_day(db_user, db)
@@ -420,6 +447,27 @@ def generate_qr_code_for_meals(token: str, db: Session = Depends(get_db)):
     
     return StreamingResponse(buf, media_type="image/png")
 
+@app.post("/meals/return-zeton")
+def return_zeton(request: QRScanRequest, vratio: bool, db: Session = Depends(get_db)):
+    try:
+        card_number = serializer.loads(request.qr_token, max_age=60) 
+    except Exception:
+        raise HTTPException(400, "QR kod je istekao (važi 60s). Osvežite aplikaciju.")
+
+    db_user = db.query(User).filter(User.stud_kartica == card_number).first()
+    if not db_user:
+        raise HTTPException(404, "Korisnik nije pronađen.")
+
+    if vratio:
+        if db_user.zeton_balance >= 1:
+            raise HTTPException(400, "Korisnik već ima žeton u balansu. Nije moguće vratiti više od jednog.")
+        db_user.zeton_balance += 1
+        db.commit()
+        db.refresh(db_user)
+        return {"message": "Žeton uspešno vraćen!"}
+    else:
+        return {"message": "Escajg nije vraćen. Žeton zadržan."}
+
 @app.post("/meals/scan-consume")
 def scan_consume_meal(request: QRScanRequest, db: Session = Depends(get_db)):
     try:
@@ -433,6 +481,9 @@ def scan_consume_meal(request: QRScanRequest, db: Session = Depends(get_db)):
     if not db_user:
         raise HTTPException(404, "Korisnik nije pronađen u sistemu.")
 
+    if db_user.zeton_balance <= 0:
+        raise HTTPException(400, "Nemate žeton u digitalnom balansu. Morate ga kupiti ili vratiti prethodni escajg.")
+    
     reset_meals_if_new_month(db_user, db)
     reset_daily_meals_if_new_day(db_user, db)
 
@@ -452,6 +503,7 @@ def scan_consume_meal(request: QRScanRequest, db: Session = Depends(get_db)):
 
     setattr(meals, rasp_attr, getattr(meals, rasp_attr) - 1)
     setattr(meals, danas_attr, getattr(meals, danas_attr) + 1)
+    db_user.zeton_balance -= 1
     new_log = MealLog(
     user_id=db_user.id,
     meal_type=current_meal_type,
@@ -465,7 +517,7 @@ def scan_consume_meal(request: QRScanRequest, db: Session = Depends(get_db)):
     db.refresh(db_user)
 
     return {
-        "message": f"Uspešno skenirano! Prijatan {current_meal_type}.",
+        "message": "Uspešno skenirano!",
         "new_data": get_user_status_data(db_user)
     }
 @app.get("/meals/history")
@@ -474,7 +526,7 @@ def get_meal_history(token: str, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == email).first()
 
     if not db_user:
-        raise HTTPException(404, "User not found")
+        raise HTTPException(404, "Korisnik nije pronađen")
 
     logs = db.query(MealLog).filter(MealLog.user_id == db_user.id)\
              .order_by(MealLog.datetimestamp.desc()).limit(10).all()

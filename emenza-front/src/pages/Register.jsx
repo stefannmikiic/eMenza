@@ -6,11 +6,11 @@ import api from "../api/api";
 
 
 const RegisterSchema = Yup.object().shape({
-  "stud-kartica": Yup.string().required('Student card number is required'),
-  email: Yup.string().email('Email is not valid').required('Email is required'),
-  password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
-  confirmPassword: Yup.string().oneOf([Yup.ref('password'), null], 'Passwords must match'),
-  status: Yup.string().required('Status is required')
+  "stud-kartica": Yup.string().required('Broj studentske kartice je obavezan'),
+  email: Yup.string().email('Email nije validan').required('Email je obavezan'),
+  password: Yup.string().min(6, 'Lozinka mora da ima najmanje 6 karaktera').required('Lozinka je obavezna'),
+  confirmPassword: Yup.string().oneOf([Yup.ref('password'), null], 'Lozinke se ne poklapaju'),
+  status: Yup.string().required('Status je obavezan')
 });
 
 function Register() {
@@ -48,7 +48,7 @@ function Register() {
         onSubmit={handleRegisterSubmit}
       >
         <Form className="registerform-form">
-          <h2 className="registerform-title">Registruj se:</h2>
+          <h2 className="registerform-title">Registrujte se:</h2>
 
           <div className="registerform-field">
             <label htmlFor="stud-kartica">Broj studentske kartice</label>
@@ -57,7 +57,7 @@ function Register() {
           </div>
 
           <div className="registerform-field">
-            <label htmlFor="email">Adresa elektronske poste</label>
+            <label htmlFor="email">Adresa elektronske pošte</label>
             <Field id="email" name="email" type="email" />
             <ErrorMessage name="email" component="div" className="registerform-error" />
           </div>
@@ -74,13 +74,13 @@ function Register() {
             <ErrorMessage name="confirmPassword" component="div" className="registerform-error" />
           </div>
           <div className="registerform-field">
-            <label>Choose a status</label>
+            <label>Odaberite status</label>
             <div className="registerform-radio-group">
-              <label>
+              <label className="radio-label">
                 <Field type="radio" name="status" value="budzet" />
-                Budzet
+                Budžet
               </label>
-              <label>
+              <label className="radio-label">
                 <Field type="radio" name="status" value="samofinansiranje" />
                 Samofinansiranje
               </label>
@@ -88,11 +88,11 @@ function Register() {
             <ErrorMessage name="status" component="div" className="registerform-error" />
           </div>
 
-          <button type="submit" className="registerform-button">Registruj se</button>
+          <button type="submit" className="registerform-button">Registrujte se</button>
 
           <div className="register-footer-links">
             <span>Imate nalog?</span>
-            <Link to="/login">Prijavi se</Link>
+            <Link to="/login">Prijavite se</Link>
             </div>  
         </Form>
       </Formik>

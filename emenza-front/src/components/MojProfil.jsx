@@ -42,7 +42,7 @@ const MojProfil = () => {
         <hr />
         <div className="profile-info">
           <div className="info-group">
-            <label>Email adresa:</label>
+            <label>Adresa elektronske pošte:</label>
             <p>{userData.email}</p>
           </div>
           <div className="info-group">

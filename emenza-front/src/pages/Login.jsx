@@ -6,8 +6,8 @@ import { useNavigate, Link } from "react-router-dom";
 import api from "../api/api";
 
 const LoginSchema = Yup.object().shape({
-  email: Yup.string().email('Email not valid').required('Email is required'),
-  password: Yup.string().required('Password is required')
+  email: Yup.string().email('Email nije validan').required('Email je obavezan'),
+  password: Yup.string().required('Lozinka je obavezna')
 });
 
 const Login = () => {
@@ -43,7 +43,7 @@ const Login = () => {
           <h2 className="loginform-title">Prijavite se:</h2>
 
           <div className="loginform-field">
-            <label htmlFor="email">Adresa elektronske poste</label>
+            <label htmlFor="email">Adresa elektronske pošte</label>
             <Field id="email" name="email" type="email" />
             <ErrorMessage name="email" component="div" className="loginform-error" />
           </div>

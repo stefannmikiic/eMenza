@@ -17,7 +17,7 @@ const Cenovnik = () => {
                 <thead>
                     <tr>
                         <th>Obrok</th>
-                        <th>Budzetske cene (po obroku)</th>
+                        <th>Budžetske cene (po obroku)</th>
                         <th>Ekonomske cene (po obroku)</th>
                     </tr>
                     </thead>
@@ -28,12 +28,12 @@ const Cenovnik = () => {
                         <td>190,00 RSD</td>
                     </tr>
                     <tr>
-                        <td>Rucak</td>
+                        <td>Ručak</td>
                         <td>120,00 RSD</td>
                         <td>450,00 RSD</td>
                     </tr>
                     <tr>
-                        <td>Vecera</td>
+                        <td>Večera</td>
                         <td>90,00 RSD</td>
                         <td>380,00 RSD</td>
                     </tr>

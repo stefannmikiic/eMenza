@@ -11,6 +11,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import NotFound from './pages/NotFound';
 import Cenovnik from './pages/Cenovnik';
 import AdminScanner from './components/AdminScanner';
+import AdminZetonScanner from './components/AdminZetonScanner';
+import KupiZetone from './pages/KupiZetone';
 
 function App() {
 
@@ -26,6 +28,8 @@ function App() {
           <Route path="/profil" element={<ProtectedRoute><MojProfil /></ProtectedRoute>} />
           <Route path="/cenovnik" element={<ProtectedRoute><Cenovnik /></ProtectedRoute>} />
           <Route path="/admin-scanner" element={<ProtectedRoute><AdminScanner /></ProtectedRoute>} />
+          <Route path="/admin-zeton-scanner" element={<ProtectedRoute><AdminZetonScanner /></ProtectedRoute>} />
+          <Route path="/kupi-zetone" element={<ProtectedRoute><KupiZetone /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

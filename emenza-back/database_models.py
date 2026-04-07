@@ -11,8 +11,10 @@ class User(Base):
     stud_kartica = Column(String, nullable=False)
     status = Column(String, nullable=False)
     balance = Column(Float, default=100000.00)
+    zeton_balance = Column(Integer, default=0)
     meals = relationship("Meal", back_populates="owner", uselist=False)
     renewal_request = relationship("CardRenewalRequest", back_populates="owner", uselist=False)
+    
 
 class Meal(Base):
     __tablename__ = "meals"

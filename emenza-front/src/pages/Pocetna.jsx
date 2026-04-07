@@ -110,7 +110,15 @@ const Pocetna = () => {
           <span className="info-value">{mealStats.user_balance ? `${mealStats.user_balance.toFixed(2)} RSD` : "0.00 RSD"}</span>
         </div>
       </div>
-
+        <div className="zeton-div">
+          <div className="stanje-zetona">
+            <span className="stanje-zeto-title">Stanje žetona</span>
+            <p className="stanje-zeto-value">{mealStats.zeton_balance}</p>
+          </div>
+          <div className="kupi-zeton">
+            <button className="btn-bordo" onClick={() => navigate('/kupi-zetone')}>Kupi žeton</button>
+          </div>
+        </div>
       <div className="meals-card">
         <h3 className="meals-title">Obroci za {currentMonthName}</h3>
         <table className="meals-table">

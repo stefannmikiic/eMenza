@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react'; // Dodati importi
-import axios from 'axios'; // Dodat import
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Navbar from '../components/Navbar';
 import '../css/UplataNovca.css';
 import { useNavigate } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 
 const UplataNovca = () => {
     const navigate = useNavigate();
     const [mealStats, setMealStats] = useState(null);
+    const [iznos, setIznos] = useState("");
     
     const user = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem('token');
@@ -24,19 +26,23 @@ const UplataNovca = () => {
         if (token) fetchMeals();
     }, [token]);
 
-    // Pomoćna funkcija za formatiranje stanja
     const formatBalance = () => {
         if (!mealStats) return "Učitavanje...";
         return `${mealStats.user_balance.toFixed(2)} RSD`;
     };
 
-    // Fiksne informacije o uplati
     const paymentInfo = {
-        recipientAccount: "150-3000005426-15",
+        recipientAccount: "150300000542615",
+        recipientName: "Studentski Centar",
         model: "54",
-        referenceNumber: user?.['stud-kartica'] || "Nema podataka"
+        referenceNumber: user?.['stud-kartica'] || "000000000"
     };
-
+    const generateIPSString = () => {
+        if (!iznos || isNaN(iznos)) return "";
+        
+        const formattedAmount = `RSD${iznos},00`;
+        return `K:PR|V:01|C:1|R:${paymentInfo.recipientAccount}|N:${paymentInfo.recipientName}|I:${formattedAmount}|SF:289|S:Uplata obroka-${paymentInfo.referenceNumber}`;
+    };
     return (
         <div className="payment-container">
             <Navbar />
@@ -76,6 +82,49 @@ const UplataNovca = () => {
                     <div className="payment-info-group">
                         <span className="info-label">Poziv na broj (Vaša kartica):</span>
                         <span className="info-value">{paymentInfo.referenceNumber}</span>
+                    </div>
+                </div>
+            </div>
+            <div className="payment-content">
+                <h1 className="payment-main-title">IPS Uplata Novca</h1>
+
+                <div className="payment-layout">
+                    <div className="payment-card info-card">
+                        <h2 className="info-title">Podaci za uplatu</h2>
+                        <div className="payment-info-group">
+                            <span className="info-label">Vaše trenutno stanje:</span>
+                            <span className="info-value">{mealStats ? `${mealStats.user_balance.toFixed(2)} RSD` : "..."}</span>
+                        </div>
+
+                        <div className="input-group">
+                            <label>Unesite iznos uplate (RSD):</label>
+                            <input 
+                                type="number" 
+                                value={iznos} 
+                                onChange={(e) => setIznos(e.target.value)}
+                                placeholder="Npr. 1500"
+                                className="amount-input"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="payment-card qr-card">
+                        <h2 className="info-title-desno">Skeniraj i plati</h2>
+                        {iznos >= 10 ? (
+                            <div className="qr-wrapper">
+                                <QRCodeSVG 
+                                    value={generateIPSString()} 
+                                    size={220}
+                                    level="M"
+                                    includeMargin={true}
+                                />
+                                <p className="qr-hint">Otvorite aplikaciju banke i skenirajte kod</p>
+                            </div>
+                        ) : (
+                            <div className="qr-placeholder">
+                                <p>Unesite iznos (minimum 10 RSD) za generisanje koda</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

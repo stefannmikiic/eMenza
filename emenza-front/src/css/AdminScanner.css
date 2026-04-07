@@ -58,6 +58,15 @@
     border-radius: 8px;
     border: none;
 }
+.zeton-start-btn {
+    background-color: #2ecc71;
+    color: white;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    border: none;
+    margin: 1rem 0;
+}
 
 .stop-btn {
     background-color: #e74c3c;

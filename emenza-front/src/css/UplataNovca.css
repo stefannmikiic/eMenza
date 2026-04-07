@@ -42,8 +42,14 @@
     font-size: 22px;
     margin-bottom: 25px;
     font-weight: bold;
+    
 }
-
+.info-title-desno {
+    font-size: 22px;
+    margin-bottom: 25px;
+    font-weight: bold;
+    color: #253965;
+}
 .payment-info-group {
     margin-bottom: 20px;
 }
@@ -65,4 +71,54 @@
     font-weight: 800;
     letter-spacing: 0.5px;
     color: white;
+}
+.payment-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.amount-input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0,0,0,0.2);
+    color: white;
+    font-size: 1.1rem;
+}
+
+.qr-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white !important;
+    color: black !important;
+}
+
+.qr-wrapper {
+    text-align: center;
+    padding: 10px;
+}
+
+.qr-hint {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #555;
+    font-weight: bold;
+}
+
+.qr-placeholder {
+    text-align: center;
+    color: #888;
+    padding: 40px;
+}
+
+@media (max-width: 768px) {
+    .payment-layout {
+        grid-template-columns: 1fr;
+    }
 }
