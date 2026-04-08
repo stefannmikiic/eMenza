@@ -43,16 +43,24 @@ const AdminZetonScanner = () => {
     };
 
     const handleZetonAction = async (vratioEscajg) => {
-        try {
-            const response = await axios.post(`http://localhost:8000/meals/return-zeton?vratio=${vratioEscajg}`, {
-                qr_token: scannedToken
-            });
-            setStatusMessage(response.data.message);
-            setScannedToken(null);
-        } catch (err) {
-            setError(err.response?.data?.detail || "Greška na serveru");
-        }
-    };
+    const poruka = vratioEscajg 
+        ? "Da li ste sigurni da je student VRATIO escajg i da želite da mu VRATITE žeton?" 
+        : "Da li ste sigurni da student NIJE vratio escajg i da želite da ZADRŽITE žeton?";
+
+    const potvrdjeno = window.confirm(poruka);
+
+    if (!potvrdjeno) return;
+
+    try {
+        const response = await axios.post(`http://localhost:8000/meals/return-zeton?vratio=${vratioEscajg}`, {
+            qr_token: scannedToken
+        });
+        setStatusMessage(response.data.message);
+        setScannedToken(null);
+    } catch (err) {
+        setError(err.response?.data?.detail || "Greška na serveru");
+    }
+};
 
     return (
         <div className="admin-scanner-container">
