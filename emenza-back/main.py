@@ -18,12 +18,17 @@ from fastapi.responses import StreamingResponse
 import io
 import qrcode
 from itsdangerous import URLSafeTimedSerializer
+from sqlalchemy import func
+from fastapi.staticfiles import StaticFiles
 
 load_dotenv()
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+script_dir = os.path.dirname(__file__)
+upload_path = os.path.join(script_dir, "../emenza-front/public/uploads") 
+app.mount("/uploads", StaticFiles(directory=upload_path), name="uploads")
 
 origins = [
     "http://localhost:5173",
@@ -100,7 +105,7 @@ def get_current_meal_type():
 
     if time(7, 0) <= current_time <= time(9, 30):
         return "dorucak"
-    if time(11, 30) <= current_time <= time(14, 30):
+    if time(10, 0) <= current_time <= time(15, 30):
         return "rucak"
     if time(17, 0) <= current_time <= time(20, 30):
         return "vecera"
@@ -532,3 +537,91 @@ def get_meal_history(token: str, db: Session = Depends(get_db)):
              .order_by(MealLog.datetimestamp.desc()).limit(10).all()
 
     return logs
+@app.get("/admin/stats")
+def get_admin_stats(db: Session = Depends(get_db)):
+
+    today = datetime.now().date()
+    today_meals = db.query(MealLog).filter(func.date(MealLog.datetimestamp) == today).count()
+
+    total_zetons = db.query(func.sum(User.zeton_balance)).scalar() or 0
+    
+    return {
+        "today_meals": today_meals,
+        "total_zetons": total_zetons
+    }
+
+@app.get("/admin/renewal-requests")
+def get_renewal_requests(db: Session = Depends(get_db)):
+    requests = db.query(CardRenewalRequest).all()
+    return requests
+
+@app.get("/admin/stats")
+def get_admin_stats(db: Session = Depends(get_db)):
+    # 1. Današnji obroci (ukupan broj skeniranja danas)
+    today = datetime.now().date()
+    today_meals = db.query(MealLog).filter(func.date(MealLog.datetimestamp) == today).count()
+    
+    # 2. Žetoni kod studenata
+    total_zetons = db.query(func.sum(User.zeton_balance)).scalar() or 0
+    
+    # 3. UKUPAN PRIHOD (Računamo spajanjem MealLog i User tabele)
+    # Moramo da proverimo status korisnika u trenutku logovanja obroka
+    
+    # Prihod od budžetskih studenata
+    rev_budzet = (
+        db.query(MealLog)
+        .join(User, User.id == MealLog.user_id)
+        .filter(User.status == "budzet")
+    )
+    
+    # Prihod od samofinansirajućih studenata
+    rev_samofin = (
+        db.query(MealLog)
+        .join(User, User.id == MealLog.user_id)
+        .filter(User.status == "samofinansiranje")
+    )
+
+    # Računica po kategorijama
+    total_revenue = (
+        # Budžet cene
+        (rev_budzet.filter(MealLog.meal_type == "dorucak").count() * 56) +
+        (rev_budzet.filter(MealLog.meal_type == "rucak").count() * 120) +
+        (rev_budzet.filter(MealLog.meal_type == "vecera").count() * 90) +
+        # Samofinansiranje cene
+        (rev_samofin.filter(MealLog.meal_type == "dorucak").count() * 190) +
+        (rev_samofin.filter(MealLog.meal_type == "rucak").count() * 450) +
+        (rev_samofin.filter(MealLog.meal_type == "vecera").count() * 380)
+    )
+    
+    return {
+        "today_meals": today_meals,
+        "total_zetons": total_zetons,
+        "total_revenue": total_revenue
+    }
+
+@app.put("/admin/update-user/{user_id}")
+def admin_update_user(user_id: int, updated_data: dict, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if not db_user:
+        raise HTTPException(404, "Korisnik nije pronađen")
+    
+    db_user.stud_kartica = updated_data.get('stud_kartica', db_user.stud_kartica)
+    db_user.balance = updated_data.get('balance', db_user.balance)
+    db_user.status = updated_data.get('status', db_user.status)
+    
+    db.commit()
+    return {"message": "Korisnik ažuriran"}
+
+@app.post("/admin/process-request/{req_id}")
+def process_renewal(req_id: int, status: str, db: Session = Depends(get_db)):
+    request = db.query(CardRenewalRequest).filter(CardRenewalRequest.id == req_id).first()
+    if not request:
+        raise HTTPException(404, "Zahtev nije pronađen")
+    
+    if status == "approved":
+        db.delete(request)
+    else:
+        db.delete(request)
+        
+    db.commit()
+    return {"message": "Zahtev obrađen"}

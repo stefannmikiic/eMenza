@@ -135,7 +135,7 @@ const KupiObroke = () => {
                     </div>
                         {user?.status === 'budzet' && dayOfMonth <= 21 && (
                         <div className="budget-alert">
-                            <p className="alert-text"><GoAlert /> Zbog budžetskog statusa, možete kupiti obroke samo u koracima od 10 do 21. dana u mesecu.</p>
+                            <p className="alert-text"><GoAlert /> Zbog budžetskog statusa, možete kupiti isključivo 10, 20 ili 30 obroka do 21. dana u mesecu.</p>
                         </div>)}
                     <div className="stepper-container">
                         <button className="step-btn" onClick={() => handleQuantityChange(-10)}>-10</button>

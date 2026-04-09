@@ -13,8 +13,12 @@ import Cenovnik from './pages/Cenovnik';
 import AdminScanner from './components/AdminScanner';
 import AdminZetonScanner from './components/AdminZetonScanner';
 import KupiZetone from './pages/KupiZetone';
+import AdminPanel from './components/AdminPanel';
+import { Navigate } from 'react-router-dom';
 
 function App() {
+
+  const user = JSON.parse(localStorage.getItem('user'));
 
   return (
       <BrowserRouter>
@@ -30,6 +34,7 @@ function App() {
           <Route path="/admin-scanner" element={<ProtectedRoute><AdminScanner /></ProtectedRoute>} />
           <Route path="/admin-zeton-scanner" element={<ProtectedRoute><AdminZetonScanner /></ProtectedRoute>} />
           <Route path="/kupi-zetone" element={<ProtectedRoute><KupiZetone /></ProtectedRoute>} />
+          <Route path="/admin-panel" element={user?.status === 'admin' ? <ProtectedRoute><AdminPanel /></ProtectedRoute> : <Navigate to="/" />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
